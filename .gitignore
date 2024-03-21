@@ -1,11 +1,14 @@
-# notebook
-ch02/.ipynb_checkpoints
-
 #environments
+ch01/env_ch01/
 ch02/env_ch02/
-
-# notebook
-ch03/.ipynb_checkpoints
-
-#environments
 ch03/env_ch03/
+ch04/env_ch04/
+
+# notebook checkpoints
+ch01/.ipynb_checkpoints
+ch02/.ipynb_checkpoints
+ch03/.ipynb_checkpoints
+ch04/.ipynb_checkpoints
+
+# temp disabled
+ch11
