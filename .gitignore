@@ -3,9 +3,11 @@ ch01/env_ch01/
 ch02/env_ch02/
 ch03/env_ch03/
 ch04/env_ch04/
+ch05/env_ch05/
 
 # notebook checkpoints
 ch01/.ipynb_checkpoints
 ch02/.ipynb_checkpoints
 ch03/.ipynb_checkpoints
 ch04/.ipynb_checkpoints
+ch05/.ipynb_checkpoints
