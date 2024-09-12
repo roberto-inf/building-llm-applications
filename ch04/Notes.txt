@@ -1,0 +1,10 @@
+This is the reserach summarization engine.
+
+* Enable Powershell at machine level:
+1) Open Powershell as Administrator
+2) Run: 
+Set-ExecutionPolicy -ExecutionPolicy AllSigned -Scope CurrentUser
+
+------
+Sequence of installations:
+pip install langchain langchain-openai langchain-community requests bs4 duckduckgo-search
