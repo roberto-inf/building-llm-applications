@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 
-openai_api_key = 'sk-proj-p1yN9o3BosniB9uwcgZtT3BlbkFJZ6uu58xjrBHRyuwo9jz2'
+openai_api_key = 'YOUR_API_KEY'
 
 def get_llm():
     return ChatOpenAI(openai_api_key=openai_api_key,
