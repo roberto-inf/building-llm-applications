@@ -1,5 +1,3 @@
-
-from utilities import to_obj
 from web_searching import web_search
 from langchain.schema.runnable import RunnableLambda
 
