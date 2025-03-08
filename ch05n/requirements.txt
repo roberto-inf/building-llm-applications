@@ -1,0 +1,7 @@
+langchain
+langchain_openai
+langchain_community
+langgraph
+requests
+bs4
+duckduckgo-search
