@@ -1,9 +1,9 @@
-notebook
+wikipedia
+docx2txt
+pypdf
 langchain
-langchain-chroma
-langchain-community
 langchain-openai
+langchain-community
+langchain-chroma
+notebook
 chromadb==0.5.3
-lxml
-html2text
-lark
