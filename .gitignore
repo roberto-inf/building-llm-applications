@@ -14,6 +14,11 @@ ch11/env_ch11/
 ch12/env_ch12/
 ch13/env_ch13/
 ch14/env_ch14/
+ch07/env_ch06/
+ch08/env_ch07/
+ch09/env_ch08/
+ch10/env_ch09/
+ch11/env_ch10/
 
 # notebook checkpoints
 ch01/.ipynb_checkpoints
@@ -35,3 +40,4 @@ ch14/.ipynb_checkpoints
 /venv/
 /ch08/UkBooking.db
 /ch10/UkBooking.db
+/ch11/env_ch10/
