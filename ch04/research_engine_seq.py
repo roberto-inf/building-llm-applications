@@ -12,7 +12,7 @@ from prompts import (
 NUM_SEARCH_QUERIES = 2
 NUM_SEARCH_RESULTS_PER_QUERY = 3
 RESULT_TEXT_MAX_CHARACTERS = 10000
-question = 'What can I see and do in the Spanish town of Astorga'
+question = 'What can I see and do in the Spanish town of Astorga?'
 
 ###
 llm = get_llm()
@@ -75,6 +75,6 @@ research_report_prompt = RESEARCH_REPORT_PROMPT_TEMPLATE.format(
 )
 research_report = llm.invoke(research_report_prompt)
 
-print(f'strigified_summary_list={stringified_summary_list}')
+print(f'stringified_summary_list={stringified_summary_list}')
 print(f'merged_result_summaries={appended_result_summaries}')
 print(f'research_report={research_report}')

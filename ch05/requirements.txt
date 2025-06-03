@@ -1,3 +1,7 @@
-notebook
-chromadb==0.5.3
-openai
+langchain
+langchain_openai
+langchain_community
+langgraph
+requests
+bs4
+duckduckgo-search
