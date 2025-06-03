@@ -1,7 +1,7 @@
 from langchain_openai import ChatOpenAI
 from typing import List, Dict, Any, TypedDict, Optional
 
-openai_api_key = 'sk-8OycLFnI7Q49GzU8T5zchhxAA1vUUCk7VCDylQdWS1T3BlbkFJV8d16LKtYeTnOHY-BC2V2FFJHMb-YvbIDlI8FrIaYA'  # replace with your key
+openai_api_key = 'YOUR_OPENAI_API_KEY'  # replace with your key
 
 def get_llm():
     return ChatOpenAI(openai_api_key=openai_api_key,
