@@ -213,7 +213,7 @@ builder.add_conditional_edges("llm_node", tools_condition) #C
 builder.add_edge("tools", "llm_node") #D
 
 builder.set_entry_point("llm_node") #E
-app = builder.compile() #F
+travel_info_agent = builder.compile() #F
 
 #A Define the graph builder
 #B Add the LLM node and the tools node to the graph
@@ -233,7 +233,7 @@ def chat_loop(): #A
         if user_input.lower() in {"exit", "quit"}: #C
             break
         state = {"messages": [HumanMessage(content=user_input)]} #D
-        result = app.invoke(state) #E
+        result = travel_info_agent.invoke(state) #E
         response_msg = result["messages"][-1] #F
         print(f"Assistant: {response_msg.content}\n") #G
 

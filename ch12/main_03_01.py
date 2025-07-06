@@ -6,7 +6,6 @@ import os
 import asyncio
 import operator
 from typing import Annotated, Sequence, TypedDict, Literal, Optional
-import json
 from dotenv import load_dotenv
 import random
 
@@ -14,11 +13,11 @@ from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage
+from langgraph.managed.is_last_step import RemainingSteps
 from langchain_core.tools import tool
+from langgraph.prebuilt import create_react_agent
 
-from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import tools_condition
 
 # -----------------------------------------------------------------------------
 # Load environment variables
@@ -112,11 +111,10 @@ TOOLS = [search_travel_info, weather_forecast] #A
 
 llm_model = ChatOpenAI(temperature=0, model="gpt-4.1-mini", #B
                        use_responses_api=True) #B
-llm_with_tools = llm_model.bind_tools(TOOLS) #C
+
 
 #A Define the tools list (in our case, only one tool)
 #B Instantiate the LLM model with the gpt-4.1-mini model and the responses API
-#C Bind the tools to the LLM model, which will generate a response with the tool calls
 
 # ----------------------------------------------------------------------------
 # 4. Initialize the dependencies for the LangGraph graph
@@ -126,101 +124,22 @@ llm_with_tools = llm_model.bind_tools(TOOLS) #C
 # AgentState: it only contains LLM messages
 # -----------------------------------------------------------------------------
 class AgentState(TypedDict): #A
-    messages: Annotated[Sequence[BaseMessage], operator.add] #B
+    messages: Annotated[Sequence[BaseMessage], operator.add]
+    remaining_steps: RemainingSteps #B
 
 #A Define the agent state
-#B The agent state only contains LLM messages, which are appended to the list of messages
-
-# -----------------------------------------------------------------------------
-# CustomToolNode 
-# -----------------------------------------------------------------------------
-
-class ToolsExecutionNode: #A
-    """Execute tools requested by the LLM in the last AIMessage."""
-
-    def __init__(self, tools: Sequence): #B
-        self._tools_by_name = {t.name: t for t in tools}
-
-    def __call__(self, state: dict): #C
-        messages: Sequence[BaseMessage] = state.get("messages", [])  
-
-        last_msg = messages[-1] #D
-        tool_messages: list[ToolMessage] = [] #E
-        tool_calls = getattr(last_msg, "tool_calls", []) #F
-        
-        for tool_call in tool_calls: #G
-            tool_name = tool_call["name"] #H
-            tool_args = tool_call["args"] #I
-            tool = self._tools_by_name[tool_name] #J
-            result = tool.invoke(tool_args) #K
-            tool_messages.append(
-                ToolMessage(
-                    content=json.dumps(result), #L
-                    name=tool_name,
-                    tool_call_id=tool_call["id"],
-                )
-            )
-        return {"messages": tool_messages} #M
-    
-tools_execution_node = ToolsExecutionNode(TOOLS) #N
-
-#A Define the tools execution node
-#B Initialize the tools execution node with the tools list
-#C Define the __call__ method, which is called when the node is invoked
-#D Get the last message from the messages list
-#E Initialize the tool messages list, to gather the results of the tool calls
-#F Get the tool calls from the last message
-#G Iterate over the tool calls
-#H Get the tool name from the tool call
-#I Get the tool arguments from the tool call
-#J Get the tool from the tools list
-#K Invoke the tool with the arguments
-#L Add the tool result to the tool messages list
-#M Return the tool messages list, which contains the results of the tool calls
-#N Instantiate the tools execution node, to be used as a node in the LangGraph graph
-
+#B this is a special type of state that contains the remaining steps of the agent
 
 # ----------------------------------------------------------------------------
-# LLM node
+# Build the travel info assistant React Agent
 # ----------------------------------------------------------------------------
 
-def llm_node(state: AgentState): #A    
-    """LLM node that decides whether to call the search tool."""
-    current_messages = state["messages"] #B
-    system_message = SystemMessage(content="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names).") #C
-    current_messages.append(system_message) #D
-    respose_message = llm_with_tools.invoke(current_messages) #E
-
-    return {"messages": [respose_message]} #F
-
-#A Define the LLM node
-#B Get the current messages from the agent state
-#C Add a system message to the current messages, to set the behavior of the assistant
-#D Append the system message to the current messages
-#E Invoke the LLM model with the current messages. The LLM will decide whether to call the search tool or return an answer.
-#F Return the response message, which contains the tool call or the answer
-
-# ----------------------------------------------------------------------------
-# 4. Build the LangGraph graph (llm_node + CustomToolNode)
-# ----------------------------------------------------------------------------
-
-builder = StateGraph(AgentState) #A
-builder.add_node("llm_node", llm_node) #B
-builder.add_node("tools", tools_execution_node) #B
-
-builder.add_conditional_edges("llm_node", tools_condition) #C
-
-builder.add_edge("tools", "llm_node") #D
-
-builder.set_entry_point("llm_node") #E
-app = builder.compile() #F
-
-#A Define the graph builder
-#B Add the LLM node and the tools node to the graph
-#C Add the conditional edges to the graph, to decide whether to execute the tool calls or return an answer and exit the graph
-#D Add the edge from the tools node to the LLM node
-#E Set the entry point to the LLM node
-#F Compile the graph
+travel_info_agent = create_react_agent(
+    model=llm_model,
+    tools=TOOLS,
+    state_schema=AgentState,
+    prompt="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names).",
+)
 
 # ----------------------------------------------------------------------------
 # 5. Simple CLI interface
@@ -233,7 +152,7 @@ def chat_loop(): #A
         if user_input.lower() in {"exit", "quit"}: #C
             break
         state = {"messages": [HumanMessage(content=user_input)]} #D
-        result = app.invoke(state) #E
+        result = travel_info_agent.invoke(state) #E
         response_msg = result["messages"][-1] #F
         print(f"Assistant: {response_msg.content}\n") #G
 
