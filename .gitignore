@@ -27,6 +27,8 @@ ch03/.ipynb_checkpoints
 ch04/.ipynb_checkpoints
 ch05/.ipynb_checkpoints
 ch06/.ipynb_checkpoints
+ch06/chroma
+ch06/chroma_data
 ch07/.ipynb_checkpoints
 ch08/.ipynb_checkpoints
 ch09/.ipynb_checkpoints
@@ -41,3 +43,15 @@ ch14/.ipynb_checkpoints
 /ch08/UkBooking.db
 /ch10/UkBooking.db
 /ch11/env_ch10/
+
+/ch04/__pycache__/
+/ch05/__pycache__/
+/ch05/agents/__pycache__/
+/ch05/utils/__pycache__/
+ch04/__pycache__/
+ch05/__pycache__/
+ch05/agents/__pycache__/
+ch05/utils/__pycache__/
+
+.idea
+
