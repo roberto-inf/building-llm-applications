@@ -46,6 +46,8 @@ ch14/.ipynb_checkpoints
 
 /ch04/__pycache__/
 /ch05/__pycache__/
+/ch05/agents/__pycache__/
+/ch05/utils/__pycache__/
 
 .idea
 
