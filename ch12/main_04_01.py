@@ -18,6 +18,8 @@ from langchain_core.messages import BaseMessage, HumanMessage
 from langgraph.managed.is_last_step import RemainingSteps
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
+from langchain_community.utilities.sql_database import SQLDatabase
+from langchain_community.agent_toolkits import SQLDatabaseToolkit
 
 
 # -----------------------------------------------------------------------------
@@ -190,66 +192,28 @@ class WeatherForecastService:
 #A Define the get_forecast method, which returns a WeatherForecast object
 
 # -----------------------------------------------------------------------------
-# HotelBookingService (MySQL-based, mock implementation)
+# SQLDatabaseToolkit for Hotel Booking (SQLite)
 # -----------------------------------------------------------------------------
-
-class HotelOffer(TypedDict):
-    hotel_id: int
-    hotel_name: str
-    town: str
-    available_rooms: int
-    price_per_room: float
-
-class HotelBookingService:
-    @staticmethod
-    def get_offers_near_town(town: str, num_rooms: int) -> List[HotelOffer]:
-        # TODO: Replace this mock with actual MySQL query logic
-        # Example mock data for demonstration
-        mock_offers = [
-            {"hotel_id": 1, "hotel_name": "Seaview Hotel", "town": "Newquay", "available_rooms": 5, "price_per_room": 120.0},
-            {"hotel_id": 2, "hotel_name": "Harbour Inn", "town": "Falmouth", "available_rooms": 2, "price_per_room": 95.0},
-            {"hotel_id": 3, "hotel_name": "Cornish Retreat", "town": "St Austell", "available_rooms": 8, "price_per_room": 110.0},
-            {"hotel_id": 4, "hotel_name": "Penzance Palace", "town": "Penzance", "available_rooms": 3, "price_per_room": 130.0},
-            {"hotel_id": 5, "hotel_name": "The Camborne Arms", "town": "Camborne", "available_rooms": 4, "price_per_room": 105.0},
-            {"hotel_id": 6, "hotel_name": "Hayle Haven", "town": "Hayle", "available_rooms": 6, "price_per_room": 99.0},
-            {"hotel_id": 7, "hotel_name": "Land's End Lodge", "town": "Land's End", "available_rooms": 2, "price_per_room": 150.0},
-            {"hotel_id": 8, "hotel_name": "Bude Beach Hotel", "town": "Bude", "available_rooms": 7, "price_per_room": 115.0},
-            {"hotel_id": 9, "hotel_name": "Padstow Quay Inn", "town": "Padstow", "available_rooms": 5, "price_per_room": 125.0},
-            {"hotel_id": 10, "hotel_name": "St Ives Bay Resort", "town": "St Ives", "available_rooms": 6, "price_per_room": 140.0},
-            {"hotel_id": 11, "hotel_name": "Looe Harbour Hotel", "town": "Looe", "available_rooms": 3, "price_per_room": 108.0},
-            {"hotel_id": 12, "hotel_name": "Polperro Cove Inn", "town": "Polperro", "available_rooms": 4, "price_per_room": 112.0},
-            {"hotel_id": 13, "hotel_name": "Mevagissey Seaside Hotel", "town": "Mevagissey", "available_rooms": 5, "price_per_room": 118.0},
-            {"hotel_id": 14, "hotel_name": "Port Isaac Retreat", "town": "Port Isaac", "available_rooms": 2, "price_per_room": 135.0},
-            {"hotel_id": 15, "hotel_name": "Fowey Riverside Hotel", "town": "Fowey", "available_rooms": 3, "price_per_room": 122.0},
-        ]
-        # Filter for offers in the requested town with enough rooms
-        offers = [offer for offer in mock_offers if offer["town"].lower() == town.lower() and offer["available_rooms"] >= num_rooms]
-        return offers
-
-@tool(description="Check hotel room availability and price for a destination in Cornwall.")
-def check_hotel_availability(destination: str, num_rooms: int) -> List[Dict]:
-    """Check hotel room availability and price for the requested destination and number of rooms."""
-    offers = HotelBookingService.get_offers_near_town(destination, num_rooms)
-    if not offers:
-        return [{"error": f"No available hotels found in {destination} for {num_rooms} rooms."}]
-    return offers
+hotel_db = SQLDatabase.from_uri("sqlite:///hotel_db/cornwall_hotels.db")
+hotel_db_toolkit = SQLDatabaseToolkit(db=hotel_db, llm=llm_model)
+hotel_db_toolkit_tools = hotel_db_toolkit.get_tools()
 
 # -----------------------------------------------------------------------------
 # BnBBookingService (Mock REST API client)
 # -----------------------------------------------------------------------------
 
-class BnBOffer(TypedDict):
+class BnBOffer(TypedDict): #A
     bnb_id: int
     bnb_name: str
     town: str
     available_rooms: int
     price_per_room: float
 
-class BnBBookingService:
+class BnBBookingService: #B
     @staticmethod
-    def get_offers_near_town(town: str, num_rooms: int) -> List[BnBOffer]:
+    def get_offers_near_town(town: str, num_rooms: int) -> List[BnBOffer]: #C
         # Mocked REST API response: multiple BnBs per destination
-        mock_bnb_offers = [
+        mock_bnb_offers = [ #D
             # Newquay
             {"bnb_id": 1, "bnb_name": "Seaside BnB", "town": "Newquay", "available_rooms": 3, "price_per_room": 80.0},
             {"bnb_id": 2, "bnb_name": "Surfside Guesthouse", "town": "Newquay", "available_rooms": 2, "price_per_room": 85.0},
@@ -298,26 +262,43 @@ class BnBBookingService:
         ]
         offers = [offer for offer in mock_bnb_offers if offer["town"].lower() == town.lower() and offer["available_rooms"] >= num_rooms]
         return offers
+    
+#A Define the return type of the BnB availability tool
+#B Define the BnB availability tool
+#C Call the BnB booking service to get the offers
+#D Mocked BnB offers
 
-@tool(description="Check BnB room availability and price for a destination in Cornwall.")
-def check_bnb_availability(destination: str, num_rooms: int) -> List[Dict]:
+# -----------------------------------------------------------------------------
+# BnB Availability Tool
+# -----------------------------------------------------------------------------
+
+@tool(description="Check BnB room availability and price for a destination in Cornwall.") #A
+def check_bnb_availability(destination: str, num_rooms: int) -> List[Dict]: #B
     """Check BnB room availability and price for the requested destination and number of rooms."""
     offers = BnBBookingService.get_offers_near_town(destination, num_rooms)
     if not offers:
         return [{"error": f"No available BnBs found in {destination} for {num_rooms} rooms."}]
     return offers
 
-BOOKING_TOOLS = [check_hotel_availability, check_bnb_availability]
+
+#A Define the BnB availability tool
+#B Define the input and return type of the BnB availability tool
 
 # -----------------------------------------------------------------------------
 # Accommodation Booking Agent
 # -----------------------------------------------------------------------------
-accommodation_booking_agent = create_react_agent(
+BOOKING_TOOLS = hotel_db_toolkit_tools + [check_bnb_availability] #A
+
+accommodation_booking_agent = create_react_agent( #B
     model=llm_model,
     tools=BOOKING_TOOLS,
     state_schema=AgentState,
     prompt="You are a helpful assistant that can check hotel and BnB room availability and price for a destination in Cornwall. You can use the tools to get the information you need. If the users does not specify the accommodation type, you should check both hotels and BnBs.",
 )
+
+#A Define the booking tools, which are the tools from the hotel database toolkit and the BnB availability tool
+#B Create the accommodation booking agent
+
 
 if __name__ == "__main__":
     chat_loop() 

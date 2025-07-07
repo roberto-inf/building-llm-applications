@@ -41,3 +41,37 @@ python main.py
   * `tools` node -> `CustomToolNode` executes those calls.
   * `tools_condition` routes between them.
 * **Loop:** After each tool call, control returns to the LLM until a final answer is produced. 
+
+## Setting up the SQLite Database for Hotel Booking
+
+To use the hotel booking features, you need to create and populate a SQLite database with hotel and room offer data.
+
+### 1. Install SQLite (if not already installed)
+- On most systems, you can install SQLite via your package manager, or download it from https://www.sqlite.org/download.html
+
+### 2. Create the Database and Tables
+- Open a terminal and navigate to the `hotel_db` directory:
+  
+  ```sh
+  cd hotel_db
+  ```
+
+- Run the following command to create the database and populate it with sample data:
+  
+  ```sh
+  sqlite3 cornwall_hotels.db < cornwall_hotels_schema.sql
+  ```
+
+  This will create a file named `cornwall_hotels.db` in the `hotel_db` directory, containing the required tables and data.
+
+### 3. Verify the Database (optional)
+- You can open the SQLite shell to inspect the database:
+  
+  ```sh
+  sqlite3 cornwall_hotels.db
+  sqlite> .tables
+  sqlite> SELECT * FROM hotels;
+  sqlite> SELECT * FROM hotel_room_offers;
+  ```
+
+Now your database is ready for use with the application! 
