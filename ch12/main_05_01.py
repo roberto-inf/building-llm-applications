@@ -335,16 +335,25 @@ accommodation_booking_agent = create_react_agent( #B
 # -----------------------------------------------------------------------------
 # Build the LangGraph graph with router, travel_info_agent, and accommodation_booking_agent
 # -----------------------------------------------------------------------------
-graph = StateGraph(AgentState)
-graph.add_node("router_agent", router_agent_node)
-graph.add_node("travel_info_agent", travel_info_agent)
-graph.add_node("accommodation_booking_agent", accommodation_booking_agent)
+graph = StateGraph(AgentState) #A
+graph.add_node("router_agent", router_agent_node) #B
+graph.add_node("travel_info_agent", travel_info_agent) #C
+graph.add_node("accommodation_booking_agent", accommodation_booking_agent) #D
 
-graph.add_edge("travel_info_agent", END)
-graph.add_edge("accommodation_booking_agent", END)
+graph.add_edge("travel_info_agent", END) #E
+graph.add_edge("accommodation_booking_agent", END) #F
 
-graph.set_entry_point("router_agent")
-travel_assistant = graph.compile()
+graph.set_entry_point("router_agent") #G
+travel_assistant = graph.compile() #H
+
+#A Define the graph
+#B Add the router agent node
+#C Add the travel info agent node
+#D Add the accommodation booking agent node
+#E Add the edge from the travel info agent to the end
+#F Add the edge from the accommodation booking agent to the end
+#G Set the entry point to the router agent
+#H Compile the graph
 
 # ----------------------------------------------------------------------------
 # 5. Simple CLI interface
