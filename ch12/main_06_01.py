@@ -20,6 +20,7 @@ from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
+from langgraph_supervisor.supervisor import create_supervisor
 
 
 # -----------------------------------------------------------------------------
@@ -117,7 +118,7 @@ llm_model = ChatOpenAI(temperature=0, model="gpt-4.1-mini", #B
 
 
 #A Define the tools list (in our case, only one tool)
-#B Instantiate the LLM model with the gpt-4.1-mini model and the responses API
+#B Instantiate the LLM model with the gpt-4.1 model and the responses API
 
 # ----------------------------------------------------------------------------
 # 4. Initialize the dependencies for the LangGraph graph
@@ -141,31 +142,11 @@ travel_info_agent = create_react_agent(
     model=llm_model,
     tools=TOOLS,
     state_schema=AgentState,
+    name="travel_info_agent",
     prompt="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names).",
 )
 
-# ----------------------------------------------------------------------------
-# 5. Simple CLI interface
-# ----------------------------------------------------------------------------
 
-def chat_loop(): #A
-    print("UK Travel Assistant (type 'exit' to quit)")
-    while True:
-        user_input = input("You: ").strip() #B
-        if user_input.lower() in {"exit", "quit"}: #C
-            break
-        state = {"messages": [HumanMessage(content=user_input)]} #D
-        result = accommodation_booking_agent.invoke(state) #E
-        response_msg = result["messages"][-1] #F
-        print(f"Assistant: {response_msg.content}\n") #G
-
-#A Define the chat loop
-#B Get the user input
-#C Check if the user input is "exit" or "quit" to exit the loop
-#D Create the initial state with a HumanMessage containing the user input
-#E Invoke the graph with the initial state
-#F Get the last message from the result, which contains the final answer
-#G Print the assistant's final answer, from the content of the last message
 
 
 # -----------------------------------------------------------------------------
@@ -293,12 +274,59 @@ accommodation_booking_agent = create_react_agent( #B
     model=llm_model,
     tools=BOOKING_TOOLS,
     state_schema=AgentState,
+    name="accommodation_booking_agent",
     prompt="You are a helpful assistant that can check hotel and BnB room availability and price for a destination in Cornwall. You can use the tools to get the information you need. If the users does not specify the accommodation type, you should check both hotels and BnBs.",
 )
 
 #A Define the booking tools, which are the tools from the hotel database toolkit and the BnB availability tool
 #B Create the accommodation booking agent
 
+# ----------------------------------------------------------------------------
+# Supervisor
+# ----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# Travel Assistant Supervisor (Multi-Agent)
+# -----------------------------------------------------------------------------
+travel_assistant = create_supervisor( #A
+    agents=[travel_info_agent, accommodation_booking_agent], #B
+    model= ChatOpenAI(model="gpt-4.1", use_responses_api=True), #C
+    supervisor_name="travel_assistant",
+    prompt=( #D
+        "You are a supervisor that manages two agents: a travel information agent and an accommodation booking agent. "
+        "You can answer user questions that might require calling both agents when needed. "
+        "Decide which agent(s) to use for each user request and coordinate their responses."
+    )
+).compile() #E
+
+#A Create the supervisor
+#B Define the agents to be used by the supervisor
+#C Define the LLM model to be used by the supervisor to be a high-grade model like gpt-4.1 or even o3
+#D Define the prompt for the supervisor (the system prompt) that will be used to guide the supervisor's behavior
+#E Compile the supervisor, which is a LangGraph graph
+
+# ----------------------------------------------------------------------------
+# Simple CLI interface
+# ----------------------------------------------------------------------------
+
+def chat_loop(): #A
+    print("UK Travel Assistant (type 'exit' to quit)")
+    while True:
+        user_input = input("You: ").strip() #B
+        if user_input.lower() in {"exit", "quit"}: #C
+            break
+        state = {"messages": [HumanMessage(content=user_input)]} #D
+        result = travel_assistant.invoke(state) #E
+        response_msg = result["messages"][-1] #F
+        print(f"Assistant: {response_msg.content}\n") #G
+
+#A Define the chat loop
+#B Get the user input
+#C Check if the user input is "exit" or "quit" to exit the loop
+#D Create the initial state with a HumanMessage containing the user input
+#E Invoke the supervisor graph with the initial state
+#F Get the last message from the result, which contains the final answer
+#G Print the assistant's final answer, from the content of the last message
 
 if __name__ == "__main__":
     chat_loop() 
