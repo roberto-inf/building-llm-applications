@@ -8,3 +8,4 @@ tiktoken
 beautifulsoup4
 html2text
 python-dotenv 
+langgraph-supervisor
