@@ -10,3 +10,4 @@ html2text
 python-dotenv 
 langgraph-supervisor
 fastmcp
+langchain-mcp-adapters
