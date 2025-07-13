@@ -99,7 +99,7 @@ def search_travel_info(query: str) -> str: #B
 
 @tool
 def weather_forecast(town: str) -> dict:
-    """Get a mock weather forecast for a given town (Newquay, Falmouth, Truro, St Austell, Camborne, Hayle, Penzance, Land's End). Returns a WeatherForecast object with weather and temperature."""
+    """Get a mock weather forecast for a given town. Returns a WeatherForecast object with weather and temperature."""
     forecast = WeatherForecastService.get_forecast(town)
     if forecast is None:
         return {"error": f"No weather data available for '{town}'."}
