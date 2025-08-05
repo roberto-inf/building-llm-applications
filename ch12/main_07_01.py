@@ -162,8 +162,8 @@ async def main():
     )
     await chat_loop(travel_info_agent) #F
 
-if __name__ == "__main__": #G
-    asyncio.run(main()) #H
+if __name__ == "__main__":
+    asyncio.run(main()) #G
 
 #A - Define the AgentState class
 #B - Get the AccuWeather MCP server tools
@@ -171,5 +171,4 @@ if __name__ == "__main__": #G
 #D - Instantiate the LLM model
 #E - Create the travel_info_agent
 #F - Start the chat loop
-#G - Run the main function, asyncronously   
-#H - Run the main function, asyncronously   
+#G - Run the main function, asyncronously      
