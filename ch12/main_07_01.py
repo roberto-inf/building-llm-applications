@@ -144,14 +144,14 @@ async def chat_loop(agent): #A
 #G Get the last message from the result, which contains the final answer
 #H Print the assistant's final answer, from the content of the last message
 
-async def main():
-    accuweather_tools = await get_accuweather_tools() #A
-    tools = [search_travel_info, *accuweather_tools] #B
-    llm_model = ChatOpenAI(temperature=0, model="gpt-4.1-mini", use_responses_api=True) #C
+class AgentState(TypedDict): #A
+    messages: Annotated[Sequence[BaseMessage], operator.add]
+    remaining_steps: RemainingSteps
 
-    class AgentState(TypedDict): #D
-        messages: Annotated[Sequence[BaseMessage], operator.add]
-        remaining_steps: RemainingSteps
+async def main():
+    accuweather_tools = await get_accuweather_tools() #B
+    tools = [search_travel_info, *accuweather_tools] #C
+    llm_model = ChatOpenAI(temperature=0, model="gpt-4.1-mini", use_responses_api=True) #D
 
     travel_info_agent = create_react_agent( #E
         model=llm_model,
@@ -162,13 +162,14 @@ async def main():
     )
     await chat_loop(travel_info_agent) #F
 
-if __name__ == "__main__":
-    asyncio.run(main()) #G
+if __name__ == "__main__": #G
+    asyncio.run(main()) #H
 
-#A - Get the AccuWeather MCP server tools
-#B - Combine the local search_travel_info tool with the AccuWeather MCP server tools
-#C - Instantiate the LLM model
-#D - Define the AgentState class
+#A - Define the AgentState class
+#B - Get the AccuWeather MCP server tools
+#C - Combine the local search_travel_info tool with the AccuWeather MCP server tools
+#D - Instantiate the LLM model
 #E - Create the travel_info_agent
 #F - Start the chat loop
 #G - Run the main function, asyncronously   
+#H - Run the main function, asyncronously   
