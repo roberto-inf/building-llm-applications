@@ -43,7 +43,9 @@ apE/.ipynb_checkpoints
 /venv/
 /ch08/UkBooking.db
 /ch10/UkBooking.db
+/ch11/hotel_db/cornwall_hotels.db
 /ch11/env_ch10/
+/ch12/hotel_db/cornwall_hotels.db
 
 /ch04/__pycache__/
 /ch05/__pycache__/
