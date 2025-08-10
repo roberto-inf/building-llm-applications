@@ -17,7 +17,7 @@ from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage
 from langgraph.managed.is_last_step import RemainingSteps
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
@@ -153,6 +153,38 @@ class AgentTypeOutput(BaseModel):
 llm_router = llm_model.with_structured_output(AgentTypeOutput)
 
 # -----------------------------------------------------------------------------
+# Guardrail: pre_model_hook to allow only travel-related questions
+# -----------------------------------------------------------------------------
+class GuardrailDecision(BaseModel): #A
+    is_travel: bool = Field(
+        ...,
+        description=(
+            "True if the user question is about travel information: destinations, attractions, "
+            "lodging (hotels/BnBs), prices, availability, or weather in Cornwall/England."
+        ),
+    )
+    reason: str = Field(..., description="Brief justification for the decision.")
+
+GUARDRAIL_SYSTEM_PROMPT = ( #B
+    "You are a strict classifier. Given the user's last message, respond with whether it is "
+    "travel-related. Travel-related queries include destinations, attractions, lodging (hotels/BnBs), "
+    "room availability, prices, or weather in Cornwall/England."
+)
+
+REFUSAL_INSTRUCTION = ( #C
+    "You can only help with travel-related questions (destinations, attractions, lodging, prices, "
+    "availability, or weather in Cornwall/England). The user's request is not travel-related. "
+    "Politely refuse and briefly explain what topics you can help with."
+)
+
+
+llm_guardrail = llm_model.with_structured_output(GuardrailDecision) #D
+#A Define the GuardrailDecision model
+#B Define the GUARDRAIL_SYSTEM_PROMPT which constrains the model to only answer travel-related questions
+#C Define the REFUSAL_INSTRUCTION which is used to politely refuse to answer non-travel-related questions
+#D Use the same base model with structured output for fast, lightweight classification
+
+# -----------------------------------------------------------------------------
 # Router Agent System Prompt Constant
 # -----------------------------------------------------------------------------
 ROUTER_SYSTEM_PROMPT = (
@@ -167,29 +199,43 @@ ROUTER_SYSTEM_PROMPT = (
 # -----------------------------------------------------------------------------
 def router_agent_node(state: AgentState) -> Command[AgentType]:
     """Router node: decides which agent should handle the user query."""
-    messages = state["messages"] #A
-    last_msg = messages[-1] if messages else None #B
-    if isinstance(last_msg, HumanMessage): #C
-        user_input = last_msg.content #D
-        router_messages = [ #E
+    messages = state["messages"] 
+    last_msg = messages[-1] if messages else None 
+    if isinstance(last_msg, HumanMessage):
+        user_input = last_msg.content 
+
+        # Guardrail classification at routing time
+        classifier_messages = [
+            SystemMessage(content=GUARDRAIL_SYSTEM_PROMPT),
+            HumanMessage(content=user_input),
+        ]
+        decision = llm_guardrail.invoke(classifier_messages) #A
+        if not decision.is_travel: #B
+            # Return refusal directly as an AI message and shortcut to END via a dedicated node
+            refusal_text = ( #C
+                "Sorry, I can only help with travel-related questions (destinations, attractions, "
+                "lodging, prices, availability, or weather in Cornwall/England). "
+                "Please rephrase your request to be travel-related."
+            )
+            return Command( #D
+                update={"messages": [AIMessage(content=refusal_text)]},
+                goto="guardrail_refusal",
+            ) 
+
+        router_messages = [ 
             SystemMessage(content=ROUTER_SYSTEM_PROMPT),
             HumanMessage(content=user_input)
         ]
-        router_response = llm_router.invoke(router_messages) #F
-        agent_name = router_response.agent.value #G
-        return Command(update=state, goto=agent_name) #H
+        router_response = llm_router.invoke(router_messages) 
+        agent_name = router_response.agent.value 
+        return Command(update=state, goto=agent_name) 
     
-    return Command(update=state, goto=AgentType.travel_info_agent) #I
+    return Command(update=state, goto=AgentType.travel_info_agent) 
 
-#A Get the messages from the state
-#B Get the last message from the messages list
-#C Check if the last message is a HumanMessage
-#D Get the content of the last message
-#E Create the router messages, including the system prompt and the user input
-#F Invoke the router model, which returns the relevant agent name
-#G Get the agent name from the router response
-#H Return the command to update the state and go to the agent
-#I If the last message is not a HumanMessage, return the command to update the state and go to the travel_info_agent (default agent)
+#A Invoke the guardrail model, which returns a GuardrailDecision object
+#B Check if the decision is not travel-related
+#C Define the refusal text
+#D Return the command to set a refusal message in the state and go to the guardrail refusal node
 
 # -----------------------------------------------------------------------------
 # 4. Initialize the dependencies for the LangGraph graph
@@ -203,7 +249,7 @@ travel_info_agent = create_react_agent(
     model=llm_model,
     tools=TOOLS,
     state_schema=AgentState,
-    prompt="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names).",
+    prompt="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names)."
 )
 
 
@@ -332,7 +378,7 @@ accommodation_booking_agent = create_react_agent( #B
     model=llm_model,
     tools=BOOKING_TOOLS,
     state_schema=AgentState,
-    prompt="You are a helpful assistant that can check hotel and BnB room availability and price for a destination in Cornwall. You can use the tools to get the information you need. If the users does not specify the accommodation type, you should check both hotels and BnBs.",
+    prompt="You are a helpful assistant that can check hotel and BnB room availability and price for a destination in Cornwall. You can use the tools to get the information you need. If the users does not specify the accommodation type, you should check both hotels and BnBs."
 )
 
 #A Define the booking tools, which are the tools from the hotel database toolkit and the BnB availability tool
@@ -341,28 +387,32 @@ accommodation_booking_agent = create_react_agent( #B
 # -----------------------------------------------------------------------------
 # Build the LangGraph graph with router, travel_info_agent, and accommodation_booking_agent
 # -----------------------------------------------------------------------------
-graph = StateGraph(AgentState) #A
-graph.add_node("router_agent", router_agent_node) #B
-graph.add_node("travel_info_agent", travel_info_agent) #C
-graph.add_node("accommodation_booking_agent", accommodation_booking_agent) #D
 
-graph.add_edge("travel_info_agent", END) #E
-graph.add_edge("accommodation_booking_agent", END) #F
+# -----------------------------------------------------------------------------
+# Guardrail refusal node (no-op, used to shortcut to END)
+# -----------------------------------------------------------------------------
+def guardrail_refusal_node(state: AgentState): #A
+    return {}
 
-graph.set_entry_point("router_agent") #G
+graph = StateGraph(AgentState) 
+graph.add_node("router_agent", router_agent_node) 
+graph.add_node("travel_info_agent", travel_info_agent) 
+graph.add_node("accommodation_booking_agent", accommodation_booking_agent) 
+graph.add_node("guardrail_refusal", guardrail_refusal_node) #B
 
-checkpointer = InMemorySaver() #H
-travel_assistant = graph.compile(checkpointer=checkpointer) #I
+graph.add_edge("travel_info_agent", END) 
+graph.add_edge("accommodation_booking_agent", END) 
+graph.add_edge("guardrail_refusal", END) #C
 
-#A Define the graph
-#B Add the router agent node
-#C Add the travel info agent node
-#D Add the accommodation booking agent node
-#E Add the edge from the travel info agent to the end
-#F Add the edge from the accommodation booking agent to the end
-#G Set the entry point to the router agent
-#H Instantiate the in-memory checkpointer
-#I Compile the graph with the in-memory checkpointer
+graph.set_entry_point("router_agent") 
+
+checkpointer = InMemorySaver() 
+travel_assistant = graph.compile(checkpointer=checkpointer) 
+
+#A Define the guardrail refusal node, which is a no-op node that is used to shortcut to END 
+#B Add the guardrail refusal node
+#C Add the edge from the guardrail refusal node to the end
+
 
 # ----------------------------------------------------------------------------
 # 5. Simple CLI interface

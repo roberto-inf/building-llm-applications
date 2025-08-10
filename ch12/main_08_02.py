@@ -118,12 +118,17 @@ def weather_forecast(town: str) -> dict:
 # ----------------------------------------------------------------------------
 TOOLS = [search_travel_info, weather_forecast] #A
 
-llm_model = ChatOpenAI(temperature=0, model="gpt-4.1", #B
-                       use_responses_api=True) #B
-
-
 #A Define the tools list (in our case, only one tool)
-#B Instantiate the LLM model with the gpt-4.1-mini model and the responses API
+
+
+llm_model = ChatOpenAI(model="gpt-5", #A
+                       use_responses_api=True, #B                      
+                       use_previous_response_id=True) #C
+
+
+#A Instantiate the LLM model with the gpt-5 model
+#B Use the Responses API
+#C Use the previous response ID to continue the conversation
 
 # -----------------------------------------------------------------------------
 # AgentState: it only contains LLM messages
@@ -364,35 +369,62 @@ travel_assistant = graph.compile(checkpointer=checkpointer) #I
 # 5. Simple CLI interface
 # ----------------------------------------------------------------------------
 
-def chat_loop(): #A
-    thread_id=uuid.uuid1() #B
+def chat_loop(): 
+    thread_id=uuid.uuid1() #A
     print(f'Thread ID: {thread_id}') 
     config={"configurable": {"thread_id": thread_id}} #B
 
-    print("UK Travel Assistant (type 'exit' to quit)")
-    while True:
-        user_input = input("You: ").strip() #C
-        if user_input.lower() in {"exit", "quit"}: #D
-            break
-        state = {"messages": [HumanMessage(content=user_input)]} #E
-        result = travel_assistant.invoke(state, config=config) #F
-        response_msg = result["messages"][-1] #G
-        print(f"Assistant: {response_msg.content}\n") #H
+    user_input = input("You: ").strip() #C
 
-        state_history = travel_assistant.get_state_history(config) #I
-        print(f'State history: {list(state_history)}') #J
+    question = {"messages": [HumanMessage(content=user_input)]} #D
+    result = travel_assistant.invoke(question, config=config) #E
+    response_msg = result["messages"][-1] #F
+    print(f"Assistant: {response_msg.content}\n") #G
 
+    state_history = travel_assistant.get_state_history(config) #H
+    state_history_list = list(state_history) #I
+    print(f'State history: {state_history_list}') #I
 
-#A Define the chat loop
-#B Create a unique thread id
-#C Check if the user input is "exit" or "quit" to exit the loop
-#D Create the initial state with a HumanMessage containing the user input
-#E Set the state with the HumanMessage
-#F Invoke the graph with the state and the config
-#G Get the last message from the result, which contains the final answer
-#H Print the assistant's final answer, from the content of the last message
-#I Get the state history from the graph
-#J Print the state history
+    last_snapshot = list(state_history_list)[0] #J
+    print(f'Last snapshot: {last_snapshot.config}')
+
+    thread_id = last_snapshot.config["configurable"]["thread_id"] #K
+    last_checkpoint_id = last_snapshot.config["configurable"]["checkpoint_id"] #L
+
+    new_config = {"configurable": #M
+              {"thread_id": thread_id, 
+               "checkpoint_id": last_checkpoint_id}}
+    
+    retrieved_snapshot = travel_assistant.get_state(new_config) #N
+    print(f'Retrieved snapshot: {retrieved_snapshot}') #O
+
+    travel_assistant.invoke(None, config=new_config) #P
+
+    new_question = {"messages": [HumanMessage(content="What is the weather in the same town?")]}
+    result = travel_assistant.invoke(new_question, config=new_config) #Q
+    response_msg = result["messages"][-1] #R
+
+    print(f"Assistant: {response_msg.content}\n") #S
+
+#A Create a unique thread id
+#B Create a config with the thread id
+#C Create the initial state with a HumanMessage containing the user input
+#D Set the state with the HumanMessage
+#E Invoke the graph with the state and the config
+#F Get the last message from the result, which contains the final answer
+#G Print the assistant's final answer, from the content of the last message
+#H Get the state history from the graph
+#I Print the state history
+#J Get the last snapshot from the state history
+#K Get the thread id from the last snapshot
+#L Get the checkpoint id from the last snapshot
+#M Create a new config with the thread id and the checkpoint id
+#N Get the snapshot from the graph with the new config referencing the last checkpoint
+#O Print the retrieved snapshot
+#P Rewind the graph to the last checkpoint
+#Q Invoke the graph with the new question referencing content from the last checkpoint
+#R Get the last message from the result, which contains the final answer
+#S Print the assistant's final answer, from the content of the last message
 
 if __name__ == "__main__":
     chat_loop() 
