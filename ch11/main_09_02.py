@@ -246,18 +246,18 @@ def router_agent_node(state: AgentState) -> Command[AgentType]:
 
         # Guardrail classification at routing time
         classifier_messages = [
-            SystemMessage(content=GUARDRAIL_SYSTEM_PROMPT),
+            SystemMessage(content=GUARDRAIL_SYSTEM_PROMPT), #A
             HumanMessage(content=user_input),
         ]
-        decision = llm_guardrail.invoke(classifier_messages) #A
-        if not decision.is_travel: #B
+        decision = llm_guardrail.invoke(classifier_messages) #B
+        if not decision.is_travel: #C
             # Return refusal directly as an AI message and shortcut to END via a dedicated node
-            refusal_text = ( #C
+            refusal_text = ( #D
                 "Sorry, I can only help with travel-related questions (destinations, attractions, "
                 "lodging, prices, availability, or weather in Cornwall/England). "
                 "Please rephrase your request to be travel-related."
             )
-            return Command( #D
+            return Command( #E
                 update={"messages": [AIMessage(content=refusal_text)]},
                 goto="guardrail_refusal",
             ) 
@@ -272,10 +272,11 @@ def router_agent_node(state: AgentState) -> Command[AgentType]:
     
     return Command(update=state, goto=AgentType.travel_info_agent) 
 
-#A Invoke the guardrail model, which returns a GuardrailDecision object
-#B Check if the decision is not travel-related
-#C Define the refusal text
-#D Return the command to set a refusal message in the state and go to the guardrail refusal node
+#A Define the guardrail decision prompt
+#B Invoke the guardrail model, which returns a GuardrailDecision object
+#C Check if the decision is not travel-related
+#D Define the refusal text
+#E Return the command to set a refusal message in the state and go to the guardrail refusal node
 
 # -----------------------------------------------------------------------------
 # 4. Initialize the dependencies for the LangGraph graph
