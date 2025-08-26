@@ -19,6 +19,7 @@ ch08/env_ch07/
 ch09/env_ch08/
 ch10/env_ch09/
 ch11/env_ch10/
+ch11/env_ch12/
 
 # notebook checkpoints
 ch01/.ipynb_checkpoints
@@ -37,12 +38,14 @@ ch11/.ipynb_checkpoints
 ch12/.ipynb_checkpoints
 ch13/.ipynb_checkpoints
 ch14/.ipynb_checkpoints
+apE/.ipynb_checkpoints
 /ch07/UkBooking.db
 /ch09/UkBooking.db
 /venv/
 /ch08/UkBooking.db
 /ch10/UkBooking.db
-/ch11/env_ch10/
+/ch11/hotel_db/cornwall_hotels.db
+/ch12/hotel_db/cornwall_hotels.db
 
 /ch04/__pycache__/
 /ch05/__pycache__/

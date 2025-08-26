@@ -1,3 +1,13 @@
-notebook
-openai
-langchain-openai
+langgraph
+langchain
+langchain_openai
+langchain_community
+chromadb
+aiohttp
+tiktoken
+beautifulsoup4
+html2text
+python-dotenv 
+langgraph-supervisor
+fastmcp
+langchain-mcp-adapters
