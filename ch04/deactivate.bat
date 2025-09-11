@@ -1,1 +1,0 @@
-.\env_ch05\Scripts\deactivate

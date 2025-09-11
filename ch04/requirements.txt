@@ -1,6 +1,6 @@
-langchain
-langchain_openai
-langchain_community
-requests
+langchain==0.3.27
+langchain-openai==0.3.32
+langchain-community==0.3.29
+requests==2.32.5
 bs4
-duckduckgo-search
+duckduckgo-search==7.5.0
