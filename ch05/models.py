@@ -1,11 +1,14 @@
 from langchain_openai import ChatOpenAI
 from typing import List, Dict, Any, TypedDict, Optional
+from dotenv import load_dotenv
+import os
 
-openai_api_key = 'YOUR_OPENAI_API_KEY'  # replace with your key
+load_dotenv()
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
 def get_llm():
     return ChatOpenAI(openai_api_key=openai_api_key,
-                 model_name="gpt-4o-mini")
+                 model_name="gpt-5-nano")
 
 # Define typed dictionaries for state handling
 class AssistantInfo(TypedDict):
