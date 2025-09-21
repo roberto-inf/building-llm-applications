@@ -101,7 +101,7 @@ def search_travel_info(query: str) -> str: #B
 # ----------------------------------------------------------------------------
 TOOLS = [search_travel_info] #A
 
-llm_model = ChatOpenAI(temperature=0, model="gpt-4.1-mini", #B
+llm_model = ChatOpenAI(model="gpt-5-mini", #B
                        use_responses_api=True) #B
 llm_with_tools = llm_model.bind_tools(TOOLS) #C
 

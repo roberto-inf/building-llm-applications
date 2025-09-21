@@ -130,10 +130,12 @@ async def chat_loop(agent): #A
         user_input = input("You: ").strip() #C
         if user_input.lower() in {"exit", "quit"}: #D
             break
-        state = {"messages": [HumanMessage(content=user_input)]} #E
+        state = {"messages": [HumanMessage(
+            content=user_input)]} #E
         result = await agent.ainvoke(state) #F
         response_msg = result["messages"][-1] #G
-        print(f"Assistant: {response_msg.content}\n") #H
+        print(
+           f"Assistant: {response_msg.content}\n") #H
 
 #A Define the chat loop as an async function
 #B Start the chat loop
@@ -149,16 +151,23 @@ class AgentState(TypedDict): #A
     remaining_steps: RemainingSteps
 
 async def main():
-    accuweather_tools = await get_accuweather_tools() #B
-    tools = [search_travel_info, *accuweather_tools] #C
-    llm_model = ChatOpenAI(temperature=0, model="gpt-4.1-mini", use_responses_api=True) #D
+    accuweather_tools = \
+        await get_accuweather_tools() #B
+    tools = [search_travel_info, 
+        *accuweather_tools] #C
+    llm_model = ChatOpenAI( 
+        model="gpt-5-mini",
+        use_responses_api=True) #D
 
     travel_info_agent = create_react_agent( #E
         model=llm_model,
         tools=tools,
         state_schema=AgentState,
         name="travel_info_agent",
-        prompt="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names).",
+        prompt="""You are a helpful assistant that can 
+        search travel information and get the weather forecast. 
+        Only use the tools to find the information you need 
+        (including town names).""",
     )
     await chat_loop(travel_info_agent) #F
 

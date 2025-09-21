@@ -159,26 +159,34 @@ class GuardrailDecision(BaseModel): #A
     is_travel: bool = Field(
         ...,
         description=(
-            "True if the user question is about travel information: destinations, attractions, "
-            "lodging (hotels/BnBs), prices, availability, or weather in Cornwall/England."
+            """True if the user question is about travel information: 
+            destinations, attractions, 
+            lodging (hotels/BnBs), prices, availability, 
+            or weather in Cornwall/England."""
         ),
     )
-    reason: str = Field(..., description="Brief justification for the decision.")
+    reason: str = Field(..., 
+        description="Brief justification for the decision.")
 
 GUARDRAIL_SYSTEM_PROMPT = ( #B
-    "You are a strict classifier. Given the user's last message, respond with whether it is "
-    "travel-related. Travel-related queries include destinations, attractions, lodging (hotels/BnBs), "
-    "room availability, prices, or weather in Cornwall/England."
+    """You are a strict classifier. Given the user's 
+    last message, respond with whether it is
+    travel-related. Travel-related queries 
+    include destinations, attractions, lodging (hotels/BnBs), 
+    room availability, prices, or weather in Cornwall/England."""
 )
 
 REFUSAL_INSTRUCTION = ( #C
-    "You can only help with travel-related questions (destinations, attractions, lodging, prices, "
-    "availability, or weather in Cornwall/England). The user's request is not travel-related. "
-    "Politely refuse and briefly explain what topics you can help with."
+    """You can only help with travel-related questions 
+    (destinations, attractions, lodging, prices, 
+    availability, or weather in Cornwall/England). 
+    The user's request is not travel-related. 
+    Politely refuse and briefly explain what 
+    topics you can help with."""
 )
 
-
-llm_guardrail = llm_model.with_structured_output(GuardrailDecision) #D
+llm_guardrail = llm_model.with_structured_output(
+    GuardrailDecision) #D
 #A Define the GuardrailDecision model
 #B Define the GUARDRAIL_SYSTEM_PROMPT which constrains the model to only answer travel-related questions
 #C Define the REFUSAL_INSTRUCTION which is used to politely refuse to answer non-travel-related questions
@@ -188,10 +196,15 @@ llm_guardrail = llm_model.with_structured_output(GuardrailDecision) #D
 # Router Agent System Prompt Constant
 # -----------------------------------------------------------------------------
 ROUTER_SYSTEM_PROMPT = (
-    "You are a router. Given the following user message, decide if it is a travel information question (about destinations, attractions, or general travel info) "
-    "or an accommodation booking question (about hotels, BnBs, room availability, or prices).\n"
-    "If it is a travel information question, respond with 'travel_info_agent'.\n"
-    "If it is an accommodation booking question, respond with 'accommodation_booking_agent'."
+    """You are a router. Given the following user message, 
+    decide if it is a travel information question 
+    (about destinations, attractions, or general travel info) 
+    or an accommodation booking question (about hotels, BnBs, 
+    room availability, or prices).\n
+    If it is a travel information question, respond with 
+    'travel_info_agent'.\n
+    If it is an accommodation booking question, 
+    respond with 'accommodation_booking_agent'."""
 )
 
 # -----------------------------------------------------------------------------
@@ -209,13 +222,15 @@ def router_agent_node(state: AgentState) -> Command[AgentType]:
             SystemMessage(content=GUARDRAIL_SYSTEM_PROMPT),
             HumanMessage(content=user_input),
         ]
-        decision = llm_guardrail.invoke(classifier_messages) #A
+        decision = llm_guardrail.invoke(
+            classifier_messages) #A
         if not decision.is_travel: #B
             # Return refusal directly as an AI message and shortcut to END via a dedicated node
             refusal_text = ( #C
-                "Sorry, I can only help with travel-related questions (destinations, attractions, "
-                "lodging, prices, availability, or weather in Cornwall/England). "
-                "Please rephrase your request to be travel-related."
+                """Sorry, I can only help with travel-related 
+                questions (destinations, attractions, lodging, 
+                prices, availability, or weather in Cornwall/England). 
+                Please rephrase your request to be travel-related."""
             )
             return Command( #D
                 update={"messages": [AIMessage(content=refusal_text)]},
@@ -398,7 +413,8 @@ graph = StateGraph(AgentState)
 graph.add_node("router_agent", router_agent_node) 
 graph.add_node("travel_info_agent", travel_info_agent) 
 graph.add_node("accommodation_booking_agent", accommodation_booking_agent) 
-graph.add_node("guardrail_refusal", guardrail_refusal_node) #B
+graph.add_node("guardrail_refusal", 
+    guardrail_refusal_node) #B
 
 graph.add_edge("travel_info_agent", END) 
 graph.add_edge("accommodation_booking_agent", END) 

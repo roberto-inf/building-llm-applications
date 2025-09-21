@@ -37,18 +37,24 @@ UK_DESTINATIONS = [ #A
     "West_Cornwall",
 ]
 
-async def build_vectorstore(destinations: Sequence[str]) -> Chroma: #B
-    """Download WikiVoyage pages and create a Chroma vector store."""
-    urls = [f"https://en.wikivoyage.org/wiki/{slug}" for slug in destinations] #C
+async def build_vectorstore(
+    destinations: Sequence[str]) -> Chroma: #B
+    """Download WikiVoyage pages and create
+    a Chroma vector store."""
+    urls = [f"https://en.wikivoyage.org/wiki/{slug}" 
+        for slug in destinations] #C
     loader = AsyncHtmlLoader(urls) #C
     print("Downloading destination pages ...") #C
     docs = await loader.aload() #C
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=128) #D
-    chunks = sum([splitter.split_documents([d]) for d in docs], []) #D
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1024, chunk_overlap=128) #D
+    chunks = sum([splitter.split_documents([d]) 
+        for d in docs], []) #D
 
     print(f"Embedding {len(chunks)} chunks ...") #E
-    vectordb_client = Chroma.from_documents(chunks, embedding=OpenAIEmbeddings()) #E
+    vectordb_client = Chroma.from_documents(
+        chunks, embedding=OpenAIEmbeddings()) #E
     print("Vector store ready.\n")
     return vectordb_client #F
 
@@ -59,9 +65,13 @@ _ti_vectorstore_client: Chroma | None = None #G
 def get_travel_info_vectorstore() -> Chroma: #H
     global _ti_vectorstore_client
     if _ti_vectorstore_client is None:
-        if not os.environ.get("OPENAI_API_KEY"):
-            raise RuntimeError("Set the OPENAI_API_KEY env variable and re-run.")
-        _ti_vectorstore_client = asyncio.run(build_vectorstore(UK_DESTINATIONS))
+        if not os.environ.get(
+            "OPENAI_API_KEY"):
+            raise RuntimeError(
+                """Set the OPENAI_API_KEY env 
+                variable and re-run.""")
+        _ti_vectorstore_client = asyncio.run(
+            build_vectorstore(UK_DESTINATIONS))
     return _ti_vectorstore_client #I
 
 ti_vectorstore_client = get_travel_info_vectorstore() #J
@@ -86,10 +96,13 @@ ti_retriever = ti_vectorstore_client.as_retriever() #K
 
 @tool #A
 def search_travel_info(query: str) -> str: #B
-    """Search embedded WikiVoyage content for information about destinations in England."""
+    """Search embedded WikiVoyage content for 
+    information about destinations in England."""
     docs = ti_retriever.invoke(query) #C
-    top = docs[:4] if isinstance(docs, list) else docs #C
-    return "\n---\n".join(d.page_content for d in top) #D
+    top = docs[:4] if isinstance(
+        docs, list) else docs #C
+    return "\n---\n".join(
+        d.page_content for d in top) #D
 
 #A Define the tool using the @tool decorator
 #B Define the tool function, which takes a query, performs a semantic search and returns a string response from the vectorstore
@@ -101,12 +114,13 @@ def search_travel_info(query: str) -> str: #B
 # ----------------------------------------------------------------------------
 TOOLS = [search_travel_info] #A
 
-llm_model = ChatOpenAI(temperature=0, model="gpt-4.1-mini", #B
-                       use_responses_api=True) #B
+llm_model = ChatOpenAI(
+    model="gpt-5-mini", #B
+    use_responses_api=True) #B
 llm_with_tools = llm_model.bind_tools(TOOLS) #C
 
 #A Define the tools list (in our case, only one tool)
-#B Instantiate the LLM model with the gpt-4.1-mini model and the responses API
+#B Instantiate the LLM model with the gpt-5-mini model and the responses API
 #C Bind the tools to the LLM model, which will generate a response with the tool calls
 
 # ----------------------------------------------------------------------------
@@ -137,7 +151,8 @@ class ToolsExecutionNode: #A
 
         last_msg = messages[-1] #D
         tool_messages: list[ToolMessage] = [] #E
-        tool_calls = getattr(last_msg, "tool_calls", []) #F
+        tool_calls = getattr(last_msg, 
+            "tool_calls", []) #F
         
         for tool_call in tool_calls: #G
             tool_name = tool_call["name"] #H
@@ -176,9 +191,11 @@ tools_execution_node = ToolsExecutionNode(TOOLS) #N
 # ----------------------------------------------------------------------------
 
 def llm_node(state: AgentState): #A    
-    """LLM node that decides whether to call the search tool."""
+    """LLM node that decides whether 
+    to call the search tool."""
     current_messages = state["messages"] #B
-    respose_message = llm_with_tools.invoke(current_messages) #C
+    respose_message = llm_with_tools.invoke(
+        current_messages) #C
 
     return {"messages": [respose_message]} #D
 
@@ -195,7 +212,8 @@ builder = StateGraph(AgentState) #A
 builder.add_node("llm_node", llm_node) #B
 builder.add_node("tools", tools_execution_node) #B
 
-builder.add_conditional_edges("llm_node", tools_condition) #C
+builder.add_conditional_edges("llm_node", 
+    tools_condition) #C
 
 builder.add_edge("tools", "llm_node") #D
 
@@ -216,11 +234,15 @@ travel_info_agent = builder.compile() #F
 def chat_loop(): #A
     print("UK Travel Assistant (type 'exit' to quit)")
     while True:
-        user_input = input("You: ").strip() #B
-        if user_input.lower() in {"exit", "quit"}: #C
-            break
-        state = {"messages": [HumanMessage(content=user_input)]} #D
-        result = travel_info_agent.invoke(state) #E
+        user_input = input(
+            "You: ").strip() #B
+        if user_input.lower() in \
+            {"exit", "quit"}: #C
+                break
+        state = {"messages": 
+            [HumanMessage(content=user_input)]} #D
+        result = travel_info_agent.invoke(
+            state) #E
         response_msg = result["messages"][-1] #F
         print(f"Assistant: {response_msg.content}\n") #G
 

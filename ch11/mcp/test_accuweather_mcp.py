@@ -2,7 +2,8 @@ from fastmcp import Client
 from fastmcp.client.transports import StreamableHttpTransport
 import asyncio
 
-transport = StreamableHttpTransport(url="http://localhost:8020/accu-mcp-server") #A
+transport = StreamableHttpTransport(
+    url="http://localhost:8020/accu-mcp-server") #A
 client = Client(transport) #B
 async def main():
     # Connection is established here
@@ -10,8 +11,10 @@ async def main():
         print(f"Client connected: {client.is_connected()}")
         tools = await client.list_tools() #C
         print(f"Available tools: {tools}")
-        if any(tool.name == "get_weather_conditions" for tool in tools): #D
-            result = await client.call_tool("get_weather_conditions", {"location": "Penzance, UK"}) #E
+        if any(tool.name == "get_weather_conditions" 
+            for tool in tools): #D
+            result = await client.call_tool("get_weather_conditions", 
+                {"location": "Penzance, UK"}) #E
             print(f"Call result: {result}") #F
 
     # Connection is closed automatically here

@@ -143,7 +143,10 @@ travel_info_agent = create_react_agent(
     tools=TOOLS,
     state_schema=AgentState,
     name="travel_info_agent",
-    prompt="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names).",
+    prompt="""You are a helpful assistant that can search 
+    travel information and get the weather forecast. 
+    Only use the tools to find the information you 
+    need (including town names).""",
 )
 
 
@@ -275,7 +278,12 @@ accommodation_booking_agent = create_react_agent( #B
     tools=BOOKING_TOOLS,
     state_schema=AgentState,
     name="accommodation_booking_agent",
-    prompt="You are a helpful assistant that can check hotel and BnB room availability and price for a destination in Cornwall. You can use the tools to get the information you need. If the users does not specify the accommodation type, you should check both hotels and BnBs.",
+    prompt="""You are a helpful assistant that can check 
+    hotel and BnB room availability and price for a 
+    destination in Cornwall. You can use the tools 
+    to get the information you need. If the users 
+    does not specify the accommodation type, you 
+    should check both hotels and BnBs.""",
 )
 
 #A Define the booking tools, which are the tools from the hotel database toolkit and the BnB availability tool
@@ -289,13 +297,18 @@ accommodation_booking_agent = create_react_agent( #B
 # Travel Assistant Supervisor (Multi-Agent)
 # -----------------------------------------------------------------------------
 travel_assistant = create_supervisor( #A
-    agents=[travel_info_agent, accommodation_booking_agent], #B
-    model= ChatOpenAI(model="gpt-4.1", use_responses_api=True), #C
+    agents=[travel_info_agent, 
+        accommodation_booking_agent], #B
+    model= ChatOpenAI(model="gpt-5", 
+        use_responses_api=True), #C
     supervisor_name="travel_assistant",
     prompt=( #D
-        "You are a supervisor that manages two agents: a travel information agent and an accommodation booking agent. "
-        "You can answer user questions that might require calling both agents when needed. "
-        "Decide which agent(s) to use for each user request and coordinate their responses."
+        """You are a supervisor that manages two agents: 
+        a travel information agent and an accommodation booking agent. """
+        """You can answer user questions that might require 
+        calling both agents when needed. """
+        """Decide which agent(s) to use for each user request 
+        and coordinate their responses."""
     )
 ).compile() #E
 

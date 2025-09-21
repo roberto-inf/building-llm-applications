@@ -185,18 +185,23 @@ llm_guardrail = llm_model.with_structured_output(GuardrailDecision) #D
 #D Use the same base model with structured output for fast, lightweight classification
 
 AGENT_GUARDRAIL_SYSTEM_PROMPT = ( 
-    "You are a strict classifier. Given the user's last message, respond with whether it is "
-    "travel-related. Travel-related queries include destinations, attractions, lodging (hotels/BnBs), "
-    "room availability, prices, or weather in Cornwall/England."
-    "Only accept travel-related questions covering Cornwall (England) and reject any questions"
-    "from other areas in England and from other countries"
+    """You are a strict classifier. Given the user's last message, 
+    respond with whether it is travel-related. Travel-related 
+    queries include destinations, attractions, lodging 
+    (hotels/BnBs), room availability, prices, or weather in 
+    Cornwall/England. Only accept travel-related questions covering 
+    Cornwall (England) and reject any questions from other areas in 
+    England and from other countries"""
 )
 
 AGENT_REFUSAL_INSTRUCTION = ( 
-    "You can only help with travel-related questions (destinations, attractions, lodging, prices, "
-    "availability, or weather in Cornwall/England). The user's request is not travel-related. "
-    "Or it might be a travel related question but not focusing on Cornwall (England). "
-    "Politely refuse and briefly explain what topics you can help with."
+    """You can only help with travel-related questions 
+    (destinations, attractions, lodging, prices, 
+    availability, or weather in Cornwall/England). The user's 
+    request is not travel-related. Or it might be a travel 
+    related question but not focusing on Cornwall (England). 
+    Politely refuse and briefly explain what 
+    topics you can help with."""
 )
 
 def pre_model_guardrail(state: dict):
@@ -217,7 +222,9 @@ def pre_model_guardrail(state: dict):
         return {}
 
     # Inject a refusal instruction ahead of the original messages so the model politely declines
-    return {"llm_input_messages": [SystemMessage(content=AGENT_REFUSAL_INSTRUCTION), *messages]} #D
+    return {"llm_input_messages": 
+        [SystemMessage(content=AGENT_REFUSAL_INSTRUCTION),
+        *messages]} #D
 
 #A Check if the last message is a HumanMessage (which is the user input)
 #B Create the classifier messages, including the system prompt and the user input
@@ -290,7 +297,9 @@ travel_info_agent = create_react_agent(
     model=llm_model,
     tools=TOOLS,
     state_schema=AgentState,
-    prompt="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names).",
+    prompt="""You are a helpful assistant that can search travel 
+    information and get the weather forecast. Only use the tools 
+    to find the information you need (including town names).""",
     pre_model_hook=pre_model_guardrail, #A
 )
 #A Guardrail to check if the user input is travel-related and focusing on Cornwall (England)
@@ -422,7 +431,11 @@ accommodation_booking_agent = create_react_agent( #A
     model=llm_model,
     tools=BOOKING_TOOLS,
     state_schema=AgentState,
-    prompt="You are a helpful assistant that can check hotel and BnB room availability and price for a destination in Cornwall. You can use the tools to get the information you need. If the users does not specify the accommodation type, you should check both hotels and BnBs.",
+    prompt="""You are a helpful assistant that can check hotel 
+    and BnB room availability and price for a destination in 
+    Cornwall. You can use the tools to get the information you 
+    need. If the users does not specify the accommodation type,
+    you should check both hotels and BnBs.""",
     pre_model_hook=pre_model_guardrail,
 )
 

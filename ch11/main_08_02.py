@@ -376,35 +376,47 @@ def chat_loop():
 
     user_input = input("You: ").strip() #C
 
-    question = {"messages": [HumanMessage(content=user_input)]} #D
-    result = travel_assistant.invoke(question, config=config) #E
+    question = {"messages": 
+        [HumanMessage(content=user_input)]} #D
+    result = travel_assistant.invoke(
+        question, config=config) #E
     response_msg = result["messages"][-1] #F
-    print(f"Assistant: {response_msg.content}\n") #G
+    print(
+       f"Assistant: {response_msg.content}\n") #G
 
-    state_history = travel_assistant.get_state_history(config) #H
+    state_history = travel_assistant.get_state_history(
+        config) #H
     state_history_list = list(state_history) #I
     print(f'State history: {state_history_list}') #I
 
     last_snapshot = list(state_history_list)[0] #J
     print(f'Last snapshot: {last_snapshot.config}')
 
-    thread_id = last_snapshot.config["configurable"]["thread_id"] #K
-    last_checkpoint_id = last_snapshot.config["configurable"]["checkpoint_id"] #L
+    thread_id = last_snapshot.config[
+        "configurable"]["thread_id"] #K
+    last_checkpoint_id = last_snapshot.config[
+        "configurable"]["checkpoint_id"] #L
 
     new_config = {"configurable": #M
               {"thread_id": thread_id, 
                "checkpoint_id": last_checkpoint_id}}
     
-    retrieved_snapshot = travel_assistant.get_state(new_config) #N
-    print(f'Retrieved snapshot: {retrieved_snapshot}') #O
+    retrieved_snapshot = travel_assistant.get_state(
+        new_config) #N
+    print(
+       f'Retrieved snapshot: {retrieved_snapshot}') #O
 
-    travel_assistant.invoke(None, config=new_config) #P
+    travel_assistant.invoke(None, 
+    config=new_config) #P
 
-    new_question = {"messages": [HumanMessage(content="What is the weather in the same town?")]}
-    result = travel_assistant.invoke(new_question, config=new_config) #Q
+    new_question = {"messages": [HumanMessage(
+        content="What is the weather in the same town?")]}
+    result = travel_assistant.invoke(new_question, 
+        config=new_config) #Q
     response_msg = result["messages"][-1] #R
 
-    print(f"Assistant: {response_msg.content}\n") #S
+    print(
+       f"Assistant: {response_msg.content}\n") #S
 
 #A Create a unique thread id
 #B Create a config with the thread id
