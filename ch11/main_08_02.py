@@ -372,7 +372,8 @@ travel_assistant = graph.compile(checkpointer=checkpointer) #I
 def chat_loop(): 
     thread_id=uuid.uuid1() #A
     print(f'Thread ID: {thread_id}') 
-    config={"configurable": {"thread_id": thread_id}} #B
+    config={"configurable": 
+       {"thread_id": thread_id}} #B
 
     user_input = input("You: ").strip() #C
 
