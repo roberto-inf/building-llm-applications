@@ -7,8 +7,8 @@ from chain_2_1 import web_searches_chain
 from chain_3_1 import search_result_urls_chain
 from chain_4_1 import search_result_text_and_summary_chain
 
-from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.runnable import RunnableLambda
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda
 
 search_and_summarization_chain = (
     search_result_urls_chain 

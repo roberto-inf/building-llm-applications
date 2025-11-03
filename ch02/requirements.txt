@@ -1,4 +1,4 @@
 notebook==7.4.5
-langchain==0.3.27
-langchain-openai==0.3.32
-openai==1.106.1
+langchain==1.0.3
+langchain-openai==1.0.1
+openai==2.6.1

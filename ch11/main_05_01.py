@@ -116,7 +116,7 @@ def weather_forecast(town: str) -> dict:
 # ----------------------------------------------------------------------------
 TOOLS = [search_travel_info, weather_forecast] #A
 
-llm_model = ChatOpenAI(temperature=0, model="gpt-5-mini", #B
+llm_model = ChatOpenAI(model="gpt-5-mini", #B
                        use_responses_api=True) #B
 
 
@@ -382,8 +382,7 @@ def chat_loop(): #A
            [HumanMessage(content=user_input)]} #D
         result = travel_assistant.invoke(state) #E
         response_msg = result["messages"][-1] #F
-        print(f"Assistant: {
-            response_msg.content}\n") #G
+        print(f"Assistant: {response_msg.content}\n") #G
 
 #A Define the chat loop
 #B Get the user input

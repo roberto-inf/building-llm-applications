@@ -1,4 +1,4 @@
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 # web search and summarization prompts adapted from: https://github.com/langchain-ai/langchain/blob/master/templates/research-assistant/research_assistant/search/web.py 
 

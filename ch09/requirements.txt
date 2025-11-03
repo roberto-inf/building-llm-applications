@@ -1,9 +1,9 @@
-notebook==7.4.5
-langchain==0.3.27
-langchain-chroma==0.2.3
-langchain-community==0.3.29
-langchain-openai==0.3.32
-chromadb==0.5.3
+notebook==7.4.
+langchain==1.0.3
+langchain-openai==1.0.1
+langchain-community==0.4.1
+langchain-chroma==1.0.0
+chromadb==1.3.0
 lxml==5.4.0
 html2text==2025.4.15
 lark==1.2.2
