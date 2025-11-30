@@ -87,7 +87,8 @@ ti_retriever = ti_vectorstore_client.as_retriever() #K
 
 @tool #A
 def search_travel_info(query: str) -> str: #B
-    """Search embedded WikiVoyage content for information about destinations in England."""
+    """Search embedded WikiVoyage content for 
+    information about destinations in England."""
     docs = ti_retriever.invoke(query) #C
     top = docs[:4] if isinstance(docs, list) else docs #C
     return "\n---\n".join(d.page_content for d in top) #D
@@ -99,7 +100,8 @@ def search_travel_info(query: str) -> str: #B
 
 @tool
 def weather_forecast(town: str) -> dict:
-    """Get a mock weather forecast for a given town. Returns a WeatherForecast object with weather and temperature."""
+    """Get a mock weather forecast for a given town. 
+    Returns a WeatherForecast object with weather and temperature."""
     forecast = WeatherForecastService.get_forecast(town)
     if forecast is None:
         return {"error": f"No weather data available for '{town}'."}
@@ -257,11 +259,14 @@ class WeatherForecastService:
     _temp_max = 31
 
     @classmethod
-    def get_forecast(cls, town: str) -> Optional[WeatherForecast]: #A
+    def get_forecast(cls, town: str) -> \
+        Optional[WeatherForecast]: #A
 
         weather = random.choice(cls._weather_options)
         temperature = random.randint(cls._temp_min, cls._temp_max)
-        return WeatherForecast(town=town, weather=weather, temperature=temperature)
+        return WeatherForecast(town=town, 
+            weather=weather, 
+            temperature=temperature)
 
 #A Define the get_forecast method, which returns a WeatherForecast object
 

@@ -1,4 +1,5 @@
 #environments
+apE/env_ape/
 ch01/env_ch01/
 ch02/env_ch02/
 ch03/env_ch03/
@@ -21,7 +22,31 @@ ch10/env_ch09/
 ch11/env_ch10/
 ch11/env_ch12/
 
+/apE/env_ape/
+/ch01/env_ch01/
+/ch02/env_ch02/
+/ch03/env_ch03/
+/ch04/env_ch04/
+/ch05/env_ch05/
+/ch05n/env_ch05/
+/ch06/env_ch06/
+/ch07/env_ch07/
+/ch08/env_ch08/
+/ch09/env_ch09/
+/ch10/env_ch10/
+/ch11/env_ch11/
+/ch12/env_ch12/
+/ch13/env_ch13/
+/ch14/env_ch14/
+/ch07/env_ch06/
+/ch08/env_ch07/
+/ch09/env_ch08/
+/ch10/env_ch09/
+/ch11/env_ch10/
+/ch11/env_ch12/
+
 # notebook checkpoints
+apE/.ipynb_checkpoints
 ch01/.ipynb_checkpoints
 ch02/.ipynb_checkpoints
 ch03/.ipynb_checkpoints
@@ -38,14 +63,30 @@ ch11/.ipynb_checkpoints
 ch12/.ipynb_checkpoints
 ch13/.ipynb_checkpoints
 ch14/.ipynb_checkpoints
-apE/.ipynb_checkpoints
 /ch07/UkBooking.db
 /ch09/UkBooking.db
-/venv/
 /ch08/UkBooking.db
 /ch10/UkBooking.db
 /ch11/hotel_db/cornwall_hotels.db
 /ch12/hotel_db/cornwall_hotels.db
+
+/ch01/.ipynb_checkpoints
+/ch02/.ipynb_checkpoints
+/ch03/.ipynb_checkpoints
+/ch04/.ipynb_checkpoints
+/ch05/.ipynb_checkpoints
+/ch06/.ipynb_checkpoints
+/ch06/chroma
+/ch06/chroma_data
+/ch07/.ipynb_checkpoints
+/ch08/.ipynb_checkpoints
+/ch09/.ipynb_checkpoints
+/ch10/.ipynb_checkpoints
+/ch11/.ipynb_checkpoints
+/ch12/.ipynb_checkpoints
+/ch13/.ipynb_checkpoints
+/ch14/.ipynb_checkpoints
+/apE/.ipynb_checkpoints
 
 /ch04/__pycache__/
 /ch05/__pycache__/
@@ -57,4 +98,10 @@ ch05/agents/__pycache__/
 ch05/utils/__pycache__/
 
 .idea
+/ch04/.env
+/ch05/.env
+/ch11/.env
 
+ch04/.env
+ch05/.env
+ch11/.env

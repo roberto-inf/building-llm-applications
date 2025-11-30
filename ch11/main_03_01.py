@@ -84,7 +84,8 @@ ti_retriever = ti_vectorstore_client.as_retriever() #K
 # 2. Define the only tool
 # ----------------------------------------------------------------------------
 
-@tool(description="Search travel information about destinations in England.") #A
+@tool(description="""Search travel information 
+about destinations in England.""") #A
 def search_travel_info(query: str) -> str: #B
     """Search embedded WikiVoyage content for information about destinations in England."""
     docs = ti_retriever.invoke(query) #C

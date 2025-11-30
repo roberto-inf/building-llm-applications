@@ -1,3 +1,3 @@
-notebook
-chromadb==0.5.3
-openai
+chromadb==1.3.0
+notebook==7.4.5
+openai==2.6.1

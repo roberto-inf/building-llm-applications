@@ -116,12 +116,12 @@ def weather_forecast(town: str) -> dict:
 # ----------------------------------------------------------------------------
 TOOLS = [search_travel_info, weather_forecast] #A
 
-llm_model = ChatOpenAI(temperature=0, model="gpt-4.1-mini", #B
+llm_model = ChatOpenAI(model="gpt-5-mini", #B
                        use_responses_api=True) #B
 
 
 #A Define the tools list (in our case, only one tool)
-#B Instantiate the LLM model with the gpt-4.1-mini model and the responses API
+#B Instantiate the LLM model with the gpt-5-mini model and the responses API
 
 # -----------------------------------------------------------------------------
 # AgentState: it only contains LLM messages
@@ -141,26 +141,34 @@ class AgentType(str, Enum):
     accommodation_booking_agent = "accommodation_booking_agent"
 
 class AgentTypeOutput(BaseModel): 
-    agent: AgentType = Field(..., description="Which agent should handle the query?")
+    agent: AgentType = Field(..., 
+    description="Which agent should handle the query?")
 
 # Structured LLM for routing
-llm_router = llm_model.with_structured_output(AgentTypeOutput)
+llm_router = llm_model.with_structured_output(
+    AgentTypeOutput)
 
 # -----------------------------------------------------------------------------
 # Router Agent System Prompt Constant
 # -----------------------------------------------------------------------------
 ROUTER_SYSTEM_PROMPT = (
-    "You are a router. Given the following user message, decide if it is a travel information question (about destinations, attractions, or general travel info) "
-    "or an accommodation booking question (about hotels, BnBs, room availability, or prices).\n"
-    "If it is a travel information question, respond with 'travel_info_agent'.\n"
-    "If it is an accommodation booking question, respond with 'accommodation_booking_agent'."
+    """You are a router. Given the following user message, 
+    decide if it is a travel information question 
+    (about destinations, attractions, or general travel info) """
+    """or an accommodation booking question (about hotels, 
+    BnBs, room availability, or prices).\n"""
+    """If it is a travel information question, 
+    respond with 'travel_info_agent'.\n"""
+    """If it is an accommodation booking question, 
+    respond with 'accommodation_booking_agent'."""
 )
 
 # -----------------------------------------------------------------------------
 # Router Agent Node for LangGraph (with structured output)
 # -----------------------------------------------------------------------------
 def router_agent_node(state: AgentState) -> Command[AgentType]:
-    """Router node: decides which agent should handle the user query."""
+    """Router node: decides which agent 
+    should handle the user query."""
     messages = state["messages"] #A
     last_msg = messages[-1] if messages else None #B
     if isinstance(last_msg, HumanMessage): #C
@@ -169,11 +177,14 @@ def router_agent_node(state: AgentState) -> Command[AgentType]:
             SystemMessage(content=ROUTER_SYSTEM_PROMPT),
             HumanMessage(content=user_input)
         ]
-        router_response = llm_router.invoke(router_messages) #F
+        router_response = llm_router.invoke(
+            router_messages) #F
         agent_name = router_response.agent.value #G
-        return Command(update=state, goto=agent_name) #H
+        return Command(update=state, 
+            goto=agent_name) #H
     
-    return Command(update=state, goto=AgentType.travel_info_agent) #I
+    return Command(update=state, 
+        goto=AgentType.travel_info_agent) #I
 
 #A Get the messages from the state
 #B Get the last message from the messages list
@@ -337,8 +348,10 @@ accommodation_booking_agent = create_react_agent( #B
 # -----------------------------------------------------------------------------
 graph = StateGraph(AgentState) #A
 graph.add_node("router_agent", router_agent_node) #B
-graph.add_node("travel_info_agent", travel_info_agent) #C
-graph.add_node("accommodation_booking_agent", accommodation_booking_agent) #D
+graph.add_node("travel_info_agent", 
+    travel_info_agent) #C
+graph.add_node("accommodation_booking_agent", 
+    accommodation_booking_agent) #D
 
 graph.add_edge("travel_info_agent", END) #E
 graph.add_edge("accommodation_booking_agent", END) #F
@@ -365,7 +378,8 @@ def chat_loop(): #A
         user_input = input("You: ").strip() #B
         if user_input.lower() in {"exit", "quit"}: #C
             break
-        state = {"messages": [HumanMessage(content=user_input)]} #D
+        state = {"messages": 
+           [HumanMessage(content=user_input)]} #D
         result = travel_assistant.invoke(state) #E
         response_msg = result["messages"][-1] #F
         print(f"Assistant: {response_msg.content}\n") #G

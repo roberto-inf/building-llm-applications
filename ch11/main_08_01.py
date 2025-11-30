@@ -343,8 +343,10 @@ accommodation_booking_agent = create_react_agent( #B
 # -----------------------------------------------------------------------------
 graph = StateGraph(AgentState) #A
 graph.add_node("router_agent", router_agent_node) #B
-graph.add_node("travel_info_agent", travel_info_agent) #C
-graph.add_node("accommodation_booking_agent", accommodation_booking_agent) #D
+graph.add_node("travel_info_agent", 
+    travel_info_agent) #C
+graph.add_node("accommodation_booking_agent", 
+    accommodation_booking_agent) #D
 
 graph.add_edge("travel_info_agent", END) #E
 graph.add_edge("accommodation_booking_agent", END) #F
@@ -352,7 +354,8 @@ graph.add_edge("accommodation_booking_agent", END) #F
 graph.set_entry_point("router_agent") #G
 
 checkpointer = InMemorySaver() #H
-travel_assistant = graph.compile(checkpointer=checkpointer) #I
+travel_assistant = graph.compile(
+    checkpointer=checkpointer) #I
 
 #A Define the graph
 #B Add the router agent node
@@ -371,17 +374,21 @@ travel_assistant = graph.compile(checkpointer=checkpointer) #I
 def chat_loop(): #A
     thread_id=uuid.uuid1() #B
     print(f'Thread ID: {thread_id}') 
-    config={"configurable": {"thread_id": thread_id}} #B
+    config={"configurable": 
+        {"thread_id": thread_id}} #B
 
     print("UK Travel Assistant (type 'exit' to quit)")
     while True:
         user_input = input("You: ").strip() #C
         if user_input.lower() in {"exit", "quit"}: #D
             break
-        state = {"messages": [HumanMessage(content=user_input)]} #E
-        result = travel_assistant.invoke(state, config=config) #F
+        state = {"messages": 
+            [HumanMessage(content=user_input)]} #E
+        result = travel_assistant.invoke(state, 
+            config=config) #F
         response_msg = result["messages"][-1] #G
-        print(f"Assistant: {response_msg.content}\n") #H
+        print(
+           f"Assistant: {response_msg.content}\n") #H
 
 
 #A Define the chat loop

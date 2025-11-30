@@ -3,8 +3,8 @@ from utilities import to_obj
 from prompts import (
     WEB_SEARCH_PROMPT_TEMPLATE
 )
-from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.runnable import RunnableLambda
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda
 
 NUM_SEARCH_QUERIES = 2
 
@@ -16,5 +16,6 @@ web_searches_chain = (
             'user_question': x['user_question']
         }
     )
-    | WEB_SEARCH_PROMPT_TEMPLATE | get_llm() | StrOutputParser() | to_obj 
+    | WEB_SEARCH_PROMPT_TEMPLATE 
+    | get_llm() | StrOutputParser() | to_obj 
 )

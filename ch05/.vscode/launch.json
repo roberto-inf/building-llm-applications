@@ -12,7 +12,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/env_ch04/Scripts/python.exe"
+            "python": "${workspaceFolder}/env_ch05/Scripts/python.exe"
         }
     ]
 }

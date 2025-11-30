@@ -85,7 +85,8 @@ ti_retriever = ti_vectorstore_client.as_retriever() #K
 # 2. Define the only tool
 # ----------------------------------------------------------------------------
 
-@tool(description="Search travel information about destinations in England.") #A
+@tool(description="""Search travel information 
+about destinations in England.""") #A
 def search_travel_info(query: str) -> str: #B
     """Search embedded WikiVoyage content for information about destinations in England."""
     docs = ti_retriever.invoke(query) #C
@@ -187,9 +188,13 @@ tools_execution_node = ToolsExecutionNode(TOOLS) #N
 def llm_node(state: AgentState): #A    
     """LLM node that decides whether to call the search tool."""
     current_messages = state["messages"] #B
-    system_message = SystemMessage(content="You are a helpful assistant that can search travel information and get the weather forecast. Only use the tools to find the information you need (including town names).") #C
+    system_message = SystemMessage(content="""You are a helpful assistant 
+    that can search travel information and get the weather forecast. 
+    Only use the tools to find the information 
+    you need (including town names).""") #C
     current_messages.append(system_message) #D
-    respose_message = llm_with_tools.invoke(current_messages) #E
+    respose_message = llm_with_tools.invoke(
+        current_messages) #E
 
     return {"messages": [respose_message]} #F
 

@@ -3,10 +3,11 @@ from utilities import to_obj
 from prompts import (
     ASSISTANT_SELECTION_PROMPT_TEMPLATE, 
 )
-from langchain.schema.runnable import RunnablePassthrough
-from langchain.schema.output_parser import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
 assistant_instructions_chain = (
     {'user_question': RunnablePassthrough()} 
-    | ASSISTANT_SELECTION_PROMPT_TEMPLATE | get_llm() | StrOutputParser() | to_obj
+    | ASSISTANT_SELECTION_PROMPT_TEMPLATE 
+    | get_llm() | StrOutputParser() | to_obj
 )
